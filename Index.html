@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(180deg, #87CEEB, #b3e0ff);
+            font-family: 'Arial', sans-serif;
+        }
+
+        #startPage {
+            text-align: center;
+            z-index: 1;
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #fb31ff, #87CEEB);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        button {
+            border: 2px solid #fb31ff;
+            border-radius: 30px;
+            background: linear-gradient(90deg, #fb31ff, #87CEEB);
+            padding: 15px 30px;
+            cursor: pointer;
+            transition: background 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background: linear-gradient(90deg, #87CEEB, #fb31ff);
+        }
+
+        a {
+            text-decoration: none;
+            color: #1206d7;
+            font-weight: bold;
+        }
+
+        canvas {
+            display: none;
+            border: 2px solid #000;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="startPage">
+        <h1>Flappy Bird Game</h1>
+        <button type="button"><p><a href="Game.html">Start Game</a></p></button>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+           justify-content: center;
+           align-items: center;
+           height: 100vh;
+        }
+
+        canvas {
+            border: 1px solid #000;
+            display: block;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        .popup-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .popup-box {
+            margin-top: 50px;
+        }
+    </style>
+    <script>
+        // Fungsi untuk menampilkan pop-up
+        function showPopup() {
+            document.getElementById('popup-container').style.display = 'flex';
+        }
+
+        // Fungsi untuk menutup pop-up
+        function closePopup() {
+            document.getElementById('popup-container').style.display = 'none';
+        }
+    </script>
+</head>
+<body>
+    <img id="birdImage" src="/img/bird1.png" alt="Bird" style="display: none;">
+
+    <canvas id="flappyBirdCanvas" width="480" height="320" style="background: url('/img/gambar.png') no-repeat center; background-size: cover;"></canvas>
+
+    <audio id="jumpSound" src="/sfx/SFX-Wing.mp3"></audio>
+
+    <audio id="hitSound" src="/sfx/death-sound.mp3"></audio>
+
+    <script>
+        const canvas = document.getElementById("flappyBirdCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const bird = {
+            x: 50,
+            y: canvas.height / 2,
+            radius: 15,
+            velocity: 0,
+            gravity: 0.2,
+            lift: -4,
+        };
+
+        const pipes = [];
+        let score = 0;
+        let highScore = 0; // Tambahkan variabel highScore
+        let gameIsOver = false;
+
+        function drawBird() {
+            const birdImage = document.getElementById("birdImage");
+            ctx.drawImage(birdImage, bird.x - bird.radius, bird.y - bird.radius, bird.radius * 2, bird.radius * 2);
+        }
+
+        function drawPipe(pipeX, openingY) {
+            const pipeWidth = 50;
+            const pipeHeight = 400;
+            const openingHeight = 100;
+            ctx.fillStyle = "#008000"; // Warna hijau
+            ctx.fillRect(pipeX, 0, pipeWidth, openingY);
+            ctx.fillRect(pipeX, openingY + openingHeight, pipeWidth, pipeHeight - openingY - openingHeight);
+        }
+
+        function drawScore() {
+            ctx.fillStyle = "#000";
+            ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, 10, 20);
+            ctx.fillText("High Score: " + highScore, 10, 40); // Tampilkan high score
+        }
+
+        function drawGameOver() {
+            ctx.fillStyle = "#000";
+            ctx.font = "30px Arial";
+            ctx.fillText("Game Over", canvas.width / 2 - 80, canvas.height / 2 - 15);
+            ctx.font = "20px Arial";
+            ctx.fillText("Your score: " + score, canvas.width / 2 - 50, canvas.height / 2 + 20);
+            ctx.fillText("Tap to restart", canvas.width / 2 - 60, canvas.height / 2 + 50);
+        }
+
+        const hitSound = document.getElementById("hitSound");
+
+        function update() {
+            if (gameIsOver) {
+                return;
+            }
+
+            bird.velocity += bird.gravity;
+            bird.y += bird.velocity;
+
+            if (bird.y > canvas.height - bird.radius) {
+                bird.y = canvas.height - bird.radius;
+                bird.velocity = 0;
+            }
+
+            if (bird.y < bird.radius) {
+                bird.y = bird.radius;
+                bird.velocity = 0;
+            }
+
+            if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 150) {
+                const openingY = Math.floor(Math.random() * (canvas.height - 200)) + 50;
+                pipes.push({ x: canvas.width, openingY, scored: false });
+            }
+
+            for (let i = pipes.length - 1; i >= 0; i--) {
+                pipes[i].x -= 2;
+
+                if (
+                    bird.x + bird.radius > pipes[i].x &&
+                    bird.x - bird.radius < pipes[i].x + 50 &&
+                    (bird.y - bird.radius < pipes[i].openingY || bird.y + bird.radius > pipes[i].openingY + 100)
+                ) {
+                    // Game over
+                    gameIsOver = true;
+                    hitSound.currentTime = 0; // Mengembalikan ke awal setiap kali dipanggil
+                    hitSound.play(); // Memainkan suara ketika burung menabrak pipa
+
+                    // Periksa apakah skor saat ini lebih tinggi dari high score
+                    if (score > highScore) {
+                        highScore = score; // Perbarui high score
+                    }
+                }
+
+                if (pipes[i].x < bird.x + bird.radius && pipes[i].x + 50 > bird.x - bird.radius && !pipes[i].scored) {
+                    // Burung melewati pipa dengan aman
+                    pipes[i].scored = true;  // Tandai pipa sebagai sudah terhitung score
+                    score++;
+                }
+
+                if (pipes[i].x + 50 < 0) {
+                    pipes.splice(i, 1);
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+            if (gameIsOver) {
+                drawGameOver();
+            } else {
+                drawBird();
+
+                for (const pipe of pipes) {
+                    drawPipe(pipe.x, pipe.openingY);
+                }
+
+                drawScore();
+            }
+        }
+
+        function resetGame() {
+            bird.y = canvas.height / 2;
+            bird.velocity = 0;
+            pipes.length = 0;
+            score = 0;
+            gameIsOver = false;
+        }
+
+        function jump() {
+            if (gameIsOver) {
+                resetGame();
+            } else {
+                bird.velocity = bird.lift;
+                jumpSound.currentTime = 0; // Mengembalikan ke awal setiap kali dipanggil
+                jumpSound.play(); // Memainkan suara ketika burung melompat
+            }
+        }
+
+        document.addEventListener("click", function () {
+            if (gameIsOver) {
+                resetGame();
+            } else {
+                jump();
+            }
+        });
+
+        let isGameRunning = true;
+
+        function gameLoop() {
+            if (isGameRunning) {
+                update();
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
